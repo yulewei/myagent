@@ -31,9 +31,7 @@
 
 ## 快速开始
 
-依赖 JDK 17+
-
-1. 配置 API 密钥
+1. **配置 API 密钥**
 
 通过环境变量设置 AI 提供商 API 密钥：
 
@@ -46,7 +44,9 @@ export QWEN_API_KEY=sk-xxx
 
 > API 密钥也可以在 `config.yaml` 中直接配置，但推荐使用环境变量。
 
-2. 启动服务
+2. **启动服务**
+
+依赖 JDK 17+
 
 ```bash
 # 启动服务
@@ -58,23 +58,23 @@ export QWEN_API_KEY=sk-xxx
 -   **REST API 文档**: [http://localhost:8989/swagger-ui/index.html](http://localhost:8989/swagger-ui/index.html)
 -   **API 根路径**: `http://localhost:8989/api`
 
-3. 快速体验
+3. **快速体验**
 
 ```bash
 # 创建新会话
 curl -X POST http://localhost:8989/api/session/new \
   -H "Content-Type: application/json" \
-  -d '{ "sessionId": "deepseek:chat", "modelId": "deepseek-v4-flash", "tools": [] }'
+  -d '{ "sessionId": "deepseek:agent", "modelId": "deepseek-v4-flash", "tools": [] }'
 
 # 发送消息（同步）
 curl -X POST http://localhost:8989/api/session/chat \
   -H "Content-Type: application/json" \
-  -d '{"sessionId": "deepseek:chat", "content": "你是什么模型？"}'
+  -d '{"sessionId": "deepseek:agent", "content": "查询杭州天气"}'
 
 # 流式对话（SSE）
 curl -X POST http://localhost:8989/api/session/chat/stream \
   -H "Content-Type: application/json" \
-  -d '{"sessionId": "deepseek:chat", "content": "你是什么模型？"}'
+  -d '{"sessionId": "deepseek:chat", "content": "查询杭州天气"}'
 ```
 
 其他接口调用示例，参见 [api-test.http](api-test.http) 文件
@@ -82,7 +82,9 @@ curl -X POST http://localhost:8989/api/session/chat/stream \
 
 ## 配置说明
 
-1. 应用配置 (`application.yaml`) 的主要配置项：
+1. **应用配置** (`application.yaml`) 
+
+主要配置项：
 
 ```yaml
 myagent:
@@ -98,7 +100,9 @@ myagent:
     qwen-api-key: QWEN_API_KEY
 ```
 
-2. Agent 配置 (`config.yaml`)，默认位置在 `~/myagent/config.yaml`，主要配置项：
+2. **Agent 配置** (`config.yaml`)
+
+默认位置在 `~/myagent/config.yaml`，主要配置项：
 
 ```yaml
 # 默认会话配置
