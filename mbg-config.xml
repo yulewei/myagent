@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE generatorConfiguration PUBLIC
+        "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd" >
+<generatorConfiguration>
+
+    <!-- !!!! Driver Class Path !!!! -->
+    <classPathEntry location="${user.home}/.gradle/caches/modules-2/files-2.1/org.xerial/sqlite-jdbc/3.53.1.0/bfd33c5a7a195a60b8288d40934481861b552684/sqlite-jdbc-3.53.1.0.jar"/>
+
+    <context id="context" targetRuntime="MyBatis3">
+
+        <!-- BaseMapperPlugin、LombokPlugin 和 RemarksCommentGenerator 来自 https://github.com/yulewei/mbg-ext -->
+        <plugin type="org.mybatis.ext.plugin.BaseMapperPlugin">
+            <property name="baseMapperType" value="ai.myagent.mapper.BaseMapper"/>
+        </plugin>
+
+        <!-- 生成的实体类使用 Lombok 注解 -->
+        <plugin type="org.mybatis.ext.plugin.LombokPlugin">
+            <property name="data" value="true"/>
+            <property name="builder" value="true"/>
+            <property name="allArgsConstructor" value="true"/>
+            <property name="noArgsConstructor" value="true"/>
+        </plugin>
+
+        <commentGenerator type="org.mybatis.ext.plugin.RemarksCommentGenerator">
+            <!-- 是否去除自动生成的注释中时间信息 -->
+            <property name="suppressDate" value="true"/>
+            <!-- 是否去除自动生成的注释 true：是 ： false:否 -->
+            <property name="suppressAllComments" value="false"/>
+        </commentGenerator>
+
+        <!-- !!!! Database Configurations !!!! -->
+        <jdbcConnection driverClass="org.sqlite.JDBC"
+                        connectionURL="jdbc:sqlite:${user.home}/myagent/data.sqlite"/>
+
+        <javaTypeResolver>
+            <property name="forceBigDecimals" value="false"/>
+        </javaTypeResolver>
+
+        <!-- !!!! Model Configurations !!!! -->
+        <javaModelGenerator targetPackage="ai.myagent.model.entity" targetProject="src/main/java/">
+            <property name="enableSubPackages" value="false"/>
+            <property name="trimStrings" value="true"/>
+        </javaModelGenerator>
+
+        <!-- !!!! Mapper XML Configurations !!!! -->
+        <sqlMapGenerator targetPackage="mapper" targetProject="src/main/resources/">
+            <property name="enableSubPackages" value="false"/>
+        </sqlMapGenerator>
+
+        <!-- !!!! Mapper Interface Configurations !!!! -->
+        <javaClientGenerator targetPackage="ai.myagent.mapper"
+                             targetProject="src/main/java/" type="XMLMAPPER">
+            <property name="enableSubPackages" value="false"/>
+        </javaClientGenerator>
+
+        <!-- !!!! Table Configurations !!!! -->
+        <table tableName="t_session" domainObjectName="Session">
+        </table>
+
+        <table tableName="t_session_message" domainObjectName="SessionMessage">
+        </table>
+
+    </context>
+</generatorConfiguration>

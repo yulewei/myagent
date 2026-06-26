@@ -1,0 +1,38 @@
+session-default:
+  model-id: deepseek-v4-flash
+  tools: [ File, Shell, Glob, Grep, WebFetch, Skill ]
+providers:
+  - id: DeepSeek
+    name: DeepSeek
+    base-url: https://api.deepseek.com
+    api-key: "${DEEPSEEK_API_KEY}"
+    models:
+      - id: deepseek-v4-flash
+      - id: deepseek-v4-pro
+  - id: OpenAI
+    name: OpenAI
+    base-url: https://api.openai.com/v1
+    api-key: "${OPENAI_API_KEY}"
+    models:
+      - id: gpt-5.5
+      - id: gpt-5.5-pro
+      - id: text-embedding-3-large
+        type: embedding
+  - id: GLM
+    name: 智谱GLM
+    base-url: https://open.bigmodel.cn/api/paas/v4
+    api-key: "${GLM_API_KEY}"
+    models:
+      - id: glm-5
+      - id: glm-5.1
+      - id: embedding-3
+        type: embedding
+  - id: Qwen
+    name: 阿里云百炼
+    base-url: https://dashscope.aliyuncs.com/compatible-mode/v1
+    api-key: "${QWEN_API_KEY}"
+    models:
+      - id: qwen3.6-flash
+      - id: qwen3.6-plus
+      - id: text-embedding-v4
+        type: embedding

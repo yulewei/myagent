@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ai.myagent.mapper.SessionMessageMapper">
+    <resultMap id="BaseResultMap" type="ai.myagent.model.entity.SessionMessage">
+        <!-- @mbg.generated -->
+        <id column="id" jdbcType="VARCHAR" property="id"/>
+        <result column="parent_id" jdbcType="VARCHAR" property="parentId"/>
+        <result column="session_id" jdbcType="VARCHAR" property="sessionId"/>
+        <result column="model_id" jdbcType="VARCHAR" property="modelId"/>
+        <result column="type" jdbcType="VARCHAR" property="type"/>
+        <result column="json" jdbcType="VARCHAR" property="json"/>
+        <result column="create_time" jdbcType="BIGINT" property="createTime"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        <!-- @mbg.generated -->
+        id, parent_id, session_id, model_id, type, json, create_time
+    </sql>
+    <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+        <!-- @mbg.generated -->
+        select
+        <include refid="Base_Column_List"/>
+        from t_session_message
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+        <!-- @mbg.generated -->
+        delete from t_session_message
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+    <insert id="insert" parameterType="ai.myagent.model.entity.SessionMessage">
+        <!-- @mbg.generated -->
+        insert into t_session_message (id, parent_id, session_id,
+        model_id, type, json,
+        create_time)
+        values (#{id,jdbcType=VARCHAR}, #{parentId,jdbcType=VARCHAR}, #{sessionId,jdbcType=VARCHAR},
+        #{modelId,jdbcType=VARCHAR}, #{type,jdbcType=VARCHAR}, #{json,jdbcType=VARCHAR},
+        #{createTime,jdbcType=BIGINT})
+    </insert>
+    <insert id="insertSelective" parameterType="ai.myagent.model.entity.SessionMessage">
+        <!-- @mbg.generated -->
+        insert into t_session_message
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="parentId != null">
+                parent_id,
+            </if>
+            <if test="sessionId != null">
+                session_id,
+            </if>
+            <if test="modelId != null">
+                model_id,
+            </if>
+            <if test="type != null">
+                type,
+            </if>
+            <if test="json != null">
+                json,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="parentId != null">
+                #{parentId,jdbcType=VARCHAR},
+            </if>
+            <if test="sessionId != null">
+                #{sessionId,jdbcType=VARCHAR},
+            </if>
+            <if test="modelId != null">
+                #{modelId,jdbcType=VARCHAR},
+            </if>
+            <if test="type != null">
+                #{type,jdbcType=VARCHAR},
+            </if>
+            <if test="json != null">
+                #{json,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=BIGINT},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="ai.myagent.model.entity.SessionMessage">
+        <!-- @mbg.generated -->
+        update t_session_message
+        <set>
+            <if test="parentId != null">
+                parent_id = #{parentId,jdbcType=VARCHAR},
+            </if>
+            <if test="sessionId != null">
+                session_id = #{sessionId,jdbcType=VARCHAR},
+            </if>
+            <if test="modelId != null">
+                model_id = #{modelId,jdbcType=VARCHAR},
+            </if>
+            <if test="type != null">
+                type = #{type,jdbcType=VARCHAR},
+            </if>
+            <if test="json != null">
+                json = #{json,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime,jdbcType=BIGINT},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="ai.myagent.model.entity.SessionMessage">
+        <!-- @mbg.generated -->
+        update t_session_message
+        set parent_id = #{parentId,jdbcType=VARCHAR},
+        session_id = #{sessionId,jdbcType=VARCHAR},
+        model_id = #{modelId,jdbcType=VARCHAR},
+        type = #{type,jdbcType=VARCHAR},
+        json = #{json,jdbcType=VARCHAR},
+        create_time = #{createTime,jdbcType=BIGINT}
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <insert id="batchInsert">
+        insert into t_session_message (id, parent_id, session_id, model_id, type, json, create_time)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.id}, #{item.parentId}, #{item.sessionId}, #{item.modelId}, #{item.type}, #{item.json},
+            #{item.createTime})
+        </foreach>
+    </insert>
+
+    <select id="queryAllList" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from t_session_message
+        where session_id = #{sessionId}
+        order by create_time
+    </select>
+
+    <select id="queryListDesc" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from t_session_message
+        where session_id = #{sessionId}
+        order by create_time desc
+        <if test="limit != null">
+            limit #{limit}
+        </if>
+    </select>
+
+    <select id="queryNextUserMessage" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from t_session_message
+        where session_id = #{sessionId} and type = 'user' and create_time >
+        (select create_time
+        from t_session_message
+        where id = #{userMessageId} and session_id = #{sessionId} and type = 'user')
+        order by create_time
+        limit 1
+    </select>
+
+    <select id="queryByTimeRange" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from t_session_message
+        where session_id = #{sessionId}
+        and create_time >= #{startTime}
+        and <![CDATA[ create_time < #{endTime} ]]>
+    </select>
+
+</mapper>

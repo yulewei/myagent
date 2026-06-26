@@ -1,0 +1,63 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '4.1.0'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'io.freefair.lombok' version '9.5.0'
+}
+
+group = 'ai.myagent'
+version = '0.0.1'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+springBoot {
+    mainClass = 'ai.myagent.AgentApplication'
+}
+
+repositories {
+    mavenCentral()
+}
+
+test {
+    useJUnitPlatform()
+}
+
+dependencies {
+    // https://docs.spring.io/spring-ai/reference/getting-started.html#dependency-management
+    // https://mvnrepository.com/artifact/org.springframework.ai/spring-ai-bom
+    implementation platform("org.springframework.ai:spring-ai-bom:2.0.0")
+    implementation 'org.springframework.ai:spring-ai-client-chat'
+    implementation 'org.springframework.ai:spring-ai-openai'
+    implementation 'org.springframework.ai:spring-ai-deepseek'
+    // https://github.com/spring-ai-community/spring-ai-agent-utils
+    implementation 'org.springaicommunity:spring-ai-agent-utils:0.10.0'
+
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3'
+
+    // 数据库、mybatis 相关
+    implementation 'mysql:mysql-connector-java:8.0.33'
+    implementation 'org.xerial:sqlite-jdbc:3.53.1.0'
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:4.0.1'
+    implementation 'org.mybatis.generator:mybatis-generator-core:1.4.2'
+
+    implementation 'com.google.code.findbugs:jsr305:3.0.2'
+    implementation 'com.google.guava:guava:33.2.1-jre'
+    implementation 'org.projectlombok:lombok:1.18.46'
+    implementation 'org.mapstruct:mapstruct:1.6.3'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
+    implementation 'org.yaml:snakeyaml:2.4'
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.19.2'
+    implementation 'org.apache.commons:commons-lang3:3.20.0'
+    implementation 'commons-io:commons-io:2.22.0'
+    implementation 'com.konghq:unirest-java:3.14.5'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.14.2'
+}

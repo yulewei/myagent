@@ -1,0 +1,106 @@
+### api/config/models
+# 查询模型列表
+GET http://localhost:8989/api/config/models
+
+### api/config/tools
+# 查询内置工具列表
+GET http://localhost:8989/api/config/tools
+
+### api/config/skills
+# 查询可用Skills列表
+GET http://localhost:8989/api/config/skills
+
+### api/config/reload
+# 重新加载配置
+POST http://localhost:8989/api/config/reload
+
+### api/session/page
+# 查询会话分页列表（按更新时间倒序）
+GET http://localhost:8989/api/session/page
+Content-Type: application/json
+
+{ "limit": 100 }
+
+
+### api/session/new
+# 新建会话，纯聊天模式，不加载工具
+POST http://localhost:8989/api/session/new
+Content-Type: application/json
+
+{ "sessionId": "deepseek:chat", "modelId": "deepseek-v4-flash", "tools": [] }
+
+### api/session/new
+# 查看会话信息
+GET http://localhost:8989/api/session/deepseek:agent
+
+
+### api/session/{sessionId}/message/all
+# 查询会话全部历史消息列表
+GET http://localhost:8989/api/session/deepseek:agent/message/all
+
+
+### api/session/chat
+# 会话中聊天
+POST http://localhost:8989/api/session/chat
+Content-Type: application/json
+
+{ "sessionId": "deepseek:chat", "content": "你是什么模型？" }
+
+
+### api/session/{sessionId}/req-resp/{messageId}
+# 查询会话中某用户消息及其对应生成的响应消息列表
+GET http://localhost:8989/api/session/deepseek:agent/req-resp/bd97bb3898a7d30f65de5dd2c9aef505
+
+
+### api/session/new
+# 新建会话，agent 模式
+POST http://localhost:8989/api/session/new
+Content-Type: application/json
+
+{ "sessionId": "deepseek:agent", "modelId": "deepseek-v4-flash", "tools": ["FULL"] }
+
+
+### api/session/chat
+# 会话中聊天
+POST http://localhost:8989/api/session/chat
+Content-Type: application/json
+
+{ "sessionId": "deepseek:agent", "content": "查询杭州天气" }
+
+
+### api/session/chat
+# 会话中聊天
+POST http://localhost:8989/api/session/chat
+Content-Type: application/json
+
+{ "sessionId": "deepseek:agent", "content": "~/Downloads 目录下的 pdf 文件数量？" }
+
+
+### api/session/new
+# 新建会话，纯聊天模式，不加载工具
+POST http://localhost:8989/api/session/new
+Content-Type: application/json
+
+{ "sessionId": "glm:chat", "modelId": "glm-5", "tools": []}
+
+### api/session/chat
+# 会话中聊天
+POST http://localhost:8989/api/session/chat
+Content-Type: application/json
+
+{ "sessionId": "glm:chat", "content": "你是什么模型？" }
+
+### api/session/chat
+# 会话中聊天
+POST http://localhost:8989/api/session/chat
+Content-Type: application/json
+
+{ "sessionId": "openai:chat", "content": "你是什么模型？" }
+
+
+### api/session/chat/stream
+# 会话中聊天 (流式对话)
+POST http://localhost:8989/api/session/chat/stream
+Content-Type: application/json
+
+{ "sessionId": "deepseek:chat", "content": "你是什么模型？" }

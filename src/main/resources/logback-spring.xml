@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="false" scan="true" scanPeriod="1 seconds">
+    <springProperty scope="context" name="LOGS" source="logging.file.path" defaultValue="./logs"/>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>
+                [%d{yyyy-MM-dd HH:mm:ss.SSS}][%highlight(%level)][%X{trace_id:-trace_id}][%thread][%logger] %msg%n%throwable
+            </pattern>
+        </encoder>
+    </appender>
+
+    <appender name="SERVICE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOGS}/service.log</file>
+        <encoder>
+            <pattern>
+                [%d{yyyy-MM-dd HH:mm:ss.SSS}][%level][%X{trace_id:-trace_id}][%thread][%logger] %msg%n%throwable
+            </pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOGS}/service.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+            <maxHistory>7</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <appender name="SERVICE-ASYNC" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>512</queueSize>
+        <includeCallerData>true</includeCallerData>
+        <appender-ref ref="SERVICE"/>
+    </appender>
+
+    <root level="info">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="SERVICE-ASYNC"/>
+    </root>
+</configuration>

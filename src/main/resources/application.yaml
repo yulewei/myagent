@@ -1,0 +1,48 @@
+spring:
+  application:
+    name: myagent
+  profiles:
+    active: default
+  datasource:
+    driver-class-name: org.sqlite.JDBC
+    url: jdbc:sqlite:${myagent.data-dir}/${myagent.db-file}
+
+server:
+  port: 8989
+
+# MyBatis 配置
+mybatis:
+  config-location: classpath:mybatis-config.xml
+  mapper-locations: classpath:mapper/*.xml
+
+springdoc:
+  packages-to-scan: ai.myagent
+  paths-to-match: /**
+  swagger-ui:
+    operations-sorter: alpha
+    default-model-expand-depth: 10
+
+logging:
+  file.path: ${myagent.data-dir}/logs
+  config: classpath:logback-spring.xml
+  level:
+    root: info
+    ai.myagent: info
+    com.github.pagehelper.PageInterceptor: info
+
+myagent:
+  data-dir: ${user.home}/myagent     # 默认数据目录
+  db-file: data.sqlite       # 数据库文件名
+  config-file: config.yaml   # Agent 配置文件名
+  init-db-file: classpath:init/data.sqlite       # 初始化数据库文件
+  init-config-file: classpath:init/config.yaml   # 初始化配置文件
+  skills-dir: ${myagent.data-dir}/skills, ${user.home}/.agents/skills
+  env:
+    # API_KEY 环境变量名
+    openai-api-key: OPENAI_API_KEY
+    deepseek-api-key: DEEPSEEK_API_KEY
+    glm-api-key: GLM_API_KEY
+    qwen-api-key: QWEN_API_KEY
+  session-default:
+    title: Untitled
+    prompt-summary: "将以上对话内容总结为标题，尽量控制在20个字以内，不得超过30个字"
