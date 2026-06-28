@@ -39,14 +39,15 @@ logging:
     com.github.pagehelper.PageInterceptor: info
 
 myagent:
-  data-dir: ${user.home}/myagent     # 默认数据目录
+  # 默认数据目录，目录下包含 SQLite 文件、config.yaml、skills目录、知识库文件上传目录等
+  data-dir: ${user.home}/myagent
   db-file: data.sqlite       # 数据库文件名
   config-file: config.yaml   # Agent 配置文件名
   vec0-install-file: vec0-install.sh
   skills-dir: ${myagent.data-dir}/skills, ${user.home}/.agents/skills
   knowledge:
-    vector-db-file: vectordb.json
-    upload-file-dir: files
+    vector-db-file: vectordb.json  # 向量数据库文件名
+    upload-file-dir: files         # 知识库文件上传目录名
   env:
     # API_KEY 环境变量名
     openai-api-key: OPENAI_API_KEY

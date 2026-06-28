@@ -16,7 +16,6 @@ import ai.myagent.repo.KnowledgeRepo;
 import ai.myagent.service.ConfigService;
 import ai.myagent.service.KnowledgeService;
 import ai.myagent.util.JsonUtils;
-import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import jakarta.annotation.Resource;
 import lombok.SneakyThrows;
@@ -30,11 +29,11 @@ import org.springframework.ai.reader.tika.TikaDocumentReader;
 import org.springframework.ai.transformer.splitter.TokenTextSplitter;
 import org.springframework.ai.vectorstore.SimpleVectorStore;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.util.List;
@@ -84,6 +83,18 @@ public class KnowledgeServiceImpl implements KnowledgeService {
         }
     }
 
+    /**
+     * 查询知识库列表（按更新时间倒序）
+     */
+    @Override
+    public List<KnowledgeResp> queryKnowledgeList() {
+        List<Knowledge> knowledgeList = knowledgeRepo.queryAllList();
+        return knowledgeList.stream().map(KnowledgeConverter.INSTANCE::toVo).toList();
+    }
+
+    /**
+     * 查询知识库详情
+     */
     @Override
     public KnowledgeResp queryKnowledge(String knowledgeId) {
         Knowledge knowledge = knowledgeRepo.queryKnowledge(knowledgeId);
@@ -94,6 +105,9 @@ public class KnowledgeServiceImpl implements KnowledgeService {
         return KnowledgeConverter.INSTANCE.toVo(knowledge, dtoList);
     }
 
+    /**
+     * 新增知识库
+     */
     @Override
     public String newKnowledge(KnowledgeNewReq request) {
         if (StringUtils.isNotBlank(request.getId())) {
@@ -105,13 +119,39 @@ public class KnowledgeServiceImpl implements KnowledgeService {
         return knowledgeRepo.insertKnowledge(request);
     }
 
+    /**
+     * 更新知识库
+     */
     @Override
     public void updateKnowledge(KnowledgeUpdateReq request) {
         knowledgeRepo.updateKnowledge(request);
     }
 
+    /**
+     * 删除知识库
+     */
     @Override
+    @Transactional
     public void deleteKnowledge(String knowledgeId) {
+        List<KnowledgeDocDto> docList = knowledgeRepo.queryDocList(knowledgeId);
+        for (KnowledgeDocDto doc : docList) {
+            // 删除知识库文档
+            if (Objects.equals(doc.getType(), KnowledgeDocEnum.FILE.getCode())) {
+                dataDir = dataDir.endsWith(File.separator) ? dataDir : dataDir + File.separator;
+                uploadFileDir = uploadFileDir.endsWith(File.separator) ? uploadFileDir : uploadFileDir + File.separator;
+                String filePath = dataDir + uploadFileDir + doc.getFileInfo().getFileKey();
+                File file = new File(filePath);
+                if (file.exists()) {
+                    log.info("删除文件：{}", filePath);
+                    file.delete();
+                }
+            }
+            if (doc.getEmbedIds() != null && !doc.getEmbedIds().isEmpty()) {
+                // 删除向量数据库中已有的向量
+                vectorStore.delete(doc.getEmbedIds());
+            }
+        }
+        knowledgeRepo.deleteDocByKnowledgeId(knowledgeId);
         knowledgeRepo.deleteKnowledge(knowledgeId);
     }
 
@@ -124,12 +164,18 @@ public class KnowledgeServiceImpl implements KnowledgeService {
         return KnowledgeConverter.INSTANCE.toVoList(dtoList);
     }
 
+    /**
+     * 查询知识库文档详情
+     */
     @Override
     public KnowledgeDocResp queryDoc(String knowledgeId, String docId) {
         KnowledgeDocDto doc = knowledgeRepo.queryDoc(knowledgeId, docId);
         return KnowledgeConverter.INSTANCE.toVo(doc);
     }
 
+    /**
+     * 上传文本到知识库
+     */
     @Override
     public String uploadDocText(String knowledgeId, String content) {
         Knowledge knowledge = knowledgeRepo.queryKnowledge(knowledgeId);
@@ -220,7 +266,7 @@ public class KnowledgeServiceImpl implements KnowledgeService {
             // 删除向量数据库中已有的向量
             vectorStore.delete(doc.getEmbedIds());
         }
-        knowledgeRepo.deleteDoc(knowledgeId, docId);
+        knowledgeRepo.deleteDoc(docId);
     }
 
     /**

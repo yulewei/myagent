@@ -28,6 +28,12 @@ public class KnowledgeResp {
     @Schema(description = "知识库名称")
     private String name;
 
+    @Schema(description = "提供商ID")
+    private String providerId;
+
+    @Schema(description = "向量化模型ID")
+    private String modelId;
+
     @Schema(description = "创建时间")
     @JsonFormat(pattern = ISO_DATETIME_EXT_PATTERN, timezone = "GMT+8")
     private LocalDateTime createTime;

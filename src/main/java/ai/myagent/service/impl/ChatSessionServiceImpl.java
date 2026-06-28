@@ -156,7 +156,7 @@ public class ChatSessionServiceImpl implements ChatSessionService {
     }
 
     /**
-     * 修改会话，包括标题、模型、工具列表
+     * 修改会话，包括标题和模型
      */
     @Override
     public void updateSession(SessionUpdateReq request) {
@@ -340,10 +340,14 @@ public class ChatSessionServiceImpl implements ChatSessionService {
         Prompt prompt = new Prompt(chatMemory.get(sessionId), chatOptions);
         String finalMessageId = IdUtils.fastSimpleUUID();
         String finalLastMessageId = lastMessageId;
-        Flux<ChatClientResponse> fluxResponse = chatClient
+        ChatClient.ChatClientRequestSpec requestSpec = chatClient
                 .prompt(prompt)
-                .advisors(AdvisorParams.toolCallingAdvisorAutoRegister(false))
-                .stream()
+                .advisors(AdvisorParams.toolCallingAdvisorAutoRegister(false));
+        if (request.getKnowledgeId() != null) {
+            Advisor retrievalAugmentationAdvisor = this.buildRetrievalAugmentationAdvisor(request.getKnowledgeId());
+            requestSpec.advisors(retrievalAugmentationAdvisor);
+        }
+        Flux<ChatClientResponse> fluxResponse = requestSpec.stream()
                 .chatClientResponse()
                 .doOnNext(resp -> {
                     MessageDto tmp = MessageDto.builder()
@@ -394,10 +398,7 @@ public class ChatSessionServiceImpl implements ChatSessionService {
             prompt = new Prompt(result.conversationHistory(), chatOptions);
             String finalMessageId2 = IdUtils.fastSimpleUUID();
             String finalLastMessageId2 = lastMessageId;
-            fluxResponse = chatClient
-                    .prompt(prompt)
-                    .advisors(AdvisorParams.toolCallingAdvisorAutoRegister(false))
-                    .stream()
+            fluxResponse = requestSpec.stream()
                     .chatClientResponse()
                     .doOnNext(resp -> {
                         MessageDto tmp = MessageDto.builder()

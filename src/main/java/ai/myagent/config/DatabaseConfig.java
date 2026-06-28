@@ -4,8 +4,6 @@ import ai.myagent.model.dto.EmbeddingModelDto;
 import ai.myagent.service.ConfigService;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import jakarta.annotation.PreDestroy;
-import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.ai.vectorstore.SimpleVectorStore;

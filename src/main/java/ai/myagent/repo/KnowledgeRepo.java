@@ -7,9 +7,9 @@ import ai.myagent.mapper.KnowledgeDocMapper;
 import ai.myagent.mapper.KnowledgeMapper;
 import ai.myagent.model.dto.FileInfo;
 import ai.myagent.model.dto.KnowledgeDocDto;
+import ai.myagent.model.dto.KnowledgeDocQuery;
 import ai.myagent.model.entity.Knowledge;
 import ai.myagent.model.entity.KnowledgeDoc;
-import ai.myagent.model.entity.Session;
 import ai.myagent.model.vo.KnowledgeNewReq;
 import ai.myagent.model.vo.KnowledgeUpdateReq;
 import ai.myagent.util.IdUtils;
@@ -74,8 +74,13 @@ public class KnowledgeRepo {
         knowledgeMapper.updateByPrimaryKeySelective(record);
     }
 
-    public Knowledge queryKnowledge(String KnowledgeId) {
-        Knowledge record = knowledgeMapper.selectByPrimaryKey(KnowledgeId);
+    public List<Knowledge> queryAllList() {
+        return knowledgeMapper.queryAllList();
+    }
+
+
+    public Knowledge queryKnowledge(String knowledgeId) {
+        Knowledge record = knowledgeMapper.selectByPrimaryKey(knowledgeId);
         if (record == null || record.getDeleteTime() != null) {
             return null;
         }
@@ -110,17 +115,29 @@ public class KnowledgeRepo {
         return doc.getId();
     }
 
-    public void deleteDoc(String knowledgeId, String docId) {
+    public void deleteDoc(String docId) {
         KnowledgeDoc doc = KnowledgeDoc.builder()
                 .id(docId)
-                .knowledgeId(knowledgeId)
                 .deleteTime(System.currentTimeMillis())
                 .build();
         knowledgeDocMapper.updateByPrimaryKeySelective(doc);
     }
 
+    public void deleteDocByKnowledgeId(String knowledgeId) {
+        KnowledgeDocQuery query = KnowledgeDocQuery.builder()
+                .knowledgeId(knowledgeId)
+                .build();
+        KnowledgeDoc doc = KnowledgeDoc.builder()
+                .deleteTime(System.currentTimeMillis())
+                .build();
+        knowledgeDocMapper.updateByCondition(query, doc);
+    }
+
     public List<KnowledgeDocDto> queryDocList(String knowledgeId) {
-        List<KnowledgeDoc> docList = knowledgeDocMapper.queryDocList(knowledgeId);
+        KnowledgeDocQuery query = KnowledgeDocQuery.builder()
+                .knowledgeId(knowledgeId)
+                .build();
+        List<KnowledgeDoc> docList = knowledgeDocMapper.queryList(query);
         return docList.stream().map(KnowledgeConverter.INSTANCE::toDto).toList();
     }
 

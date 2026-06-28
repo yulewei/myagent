@@ -122,4 +122,13 @@
       delete_time = #{deleteTime,jdbcType=BIGINT}
     where id = #{id,jdbcType=VARCHAR}
   </update>
+
+  <select id="queryAllList" resultMap="BaseResultMap">
+      select
+      <include refid="Base_Column_List"/>
+      from t_knowledge
+      where delete_time is null
+      order by create_time desc
+  </select>
+
 </mapper>

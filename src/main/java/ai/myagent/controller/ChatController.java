@@ -93,7 +93,7 @@ public class ChatController {
         chatSessionService.updateSession(request);
     }
 
-    @PostMapping("session/delete/{sessionId}")
+    @DeleteMapping("session/{sessionId}")
     @Operation(summary = "删除会话")
     public void deleteSession(@PathVariable String sessionId) {
         chatSessionService.deleteSession(sessionId);

@@ -1,7 +1,9 @@
 package ai.myagent.service;
 
-import ai.myagent.model.vo.*;
-import jakarta.validation.Valid;
+import ai.myagent.model.vo.KnowledgeDocResp;
+import ai.myagent.model.vo.KnowledgeNewReq;
+import ai.myagent.model.vo.KnowledgeResp;
+import ai.myagent.model.vo.KnowledgeUpdateReq;
 
 import java.util.List;
 
@@ -11,12 +13,29 @@ import java.util.List;
  */
 public interface KnowledgeService {
 
+    /**
+     * 查询知识库列表（按更新时间倒序）
+     */
+    List<KnowledgeResp> queryKnowledgeList();
+
+    /**
+     * 查询知识库详情
+     */
     KnowledgeResp queryKnowledge(String knowledgeId);
 
+    /**
+     * 新建知识库
+     */
     String newKnowledge(KnowledgeNewReq request);
 
+    /**
+     * 修改知识库
+     */
     void updateKnowledge(KnowledgeUpdateReq request);
 
+    /**
+     * 删除知识库
+     */
     void deleteKnowledge(String knowledgeId);
 
     /**
@@ -24,6 +43,9 @@ public interface KnowledgeService {
      */
     List<KnowledgeDocResp> queryDocList(String knowledgeId);
 
+    /**
+     * 查询知识库文档详情
+     */
     KnowledgeDocResp queryDoc(String knowledgeId, String docId);
 
     /**

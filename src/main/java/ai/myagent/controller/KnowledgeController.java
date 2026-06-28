@@ -18,7 +18,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 import static org.springframework.http.HttpHeaders.*;
-import static org.springframework.http.HttpHeaders.EXPIRES;
 
 /**
  * @author yulewei
@@ -31,6 +30,12 @@ import static org.springframework.http.HttpHeaders.EXPIRES;
 public class KnowledgeController {
     @Resource
     private KnowledgeService knowledgeService;
+
+    @GetMapping("list")
+    @Operation(summary = "查询知识库列表（按更新时间倒序）")
+    public List<KnowledgeResp> queryKnowledgeList() {
+        return knowledgeService.queryKnowledgeList();
+    }
 
     @GetMapping("{knowledgeId}")
     @Operation(summary = "查询知识库详情")
@@ -50,25 +55,10 @@ public class KnowledgeController {
         knowledgeService.updateKnowledge(request);
     }
 
-    @PostMapping("{knowledgeId}/delete")
+    @DeleteMapping("{knowledgeId}")
     @Operation(summary = "删除知识库")
     public void deleteKnowledge(@PathVariable String knowledgeId) {
         knowledgeService.deleteKnowledge(knowledgeId);
-    }
-
-    @PostMapping("{knowledgeId}/text/upload")
-    @Operation(summary = "上传文本到知识库")
-    public String uploadDocText(@PathVariable String knowledgeId,
-                                @RequestBody KnowledgeDocTextReq req) {
-        return knowledgeService.uploadDocText(knowledgeId, req.getContent());
-    }
-
-    @SneakyThrows
-    @PostMapping(value = "{knowledgeId}/file/upload", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "上传文件到知识库")
-    public String uploadDocFile(@PathVariable String knowledgeId,
-                                @RequestParam MultipartFile file) {
-        return knowledgeService.uploadDocFile(knowledgeId, file.getBytes(), file.getOriginalFilename());
     }
 
     @GetMapping("{knowledgeId}/doc/list")
@@ -77,26 +67,42 @@ public class KnowledgeController {
         return knowledgeService.queryDocList(knowledgeId);
     }
 
-    @GetMapping("{knowledgeId}/doc/{docId}")
+    @GetMapping("{knowledgeId}/{docId}")
     @Operation(summary = "查询知识库文档详情")
     public KnowledgeDocResp queryDoc(@PathVariable String knowledgeId, @PathVariable String docId) {
-       return knowledgeService.queryDoc(knowledgeId, docId);
+        return knowledgeService.queryDoc(knowledgeId, docId);
     }
 
-    @PostMapping("{knowledgeId}/doc/embed/{docId}")
+    @PostMapping("{knowledgeId}/upload/text")
+    @Operation(summary = "上传文本到知识库")
+    public String uploadDocText(@PathVariable String knowledgeId,
+                                @RequestBody KnowledgeDocTextReq req) {
+        return knowledgeService.uploadDocText(knowledgeId, req.getContent());
+    }
+
+    @SneakyThrows
+    @PostMapping(value = "{knowledgeId}/upload/file", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "上传文件到知识库")
+    public String uploadDocFile(@PathVariable String knowledgeId,
+                                @RequestParam MultipartFile file) {
+        return knowledgeService.uploadDocFile(knowledgeId, file.getBytes(), file.getOriginalFilename());
+    }
+
+
+    @PostMapping("{knowledgeId}/{docId}/embed")
     @Operation(summary = "向量化知识库文档（若已经向量化，则重新计算）")
     public void embedDoc(@PathVariable String knowledgeId, @PathVariable String docId) {
         knowledgeService.embedDoc(knowledgeId, docId);
     }
 
-    @PostMapping("{knowledgeId}/doc/delete/{docId}")
+    @DeleteMapping("{knowledgeId}/{docId}")
     @Operation(summary = "删除知识库文档")
     public void deleteDoc(@PathVariable String knowledgeId, @PathVariable String docId) {
         knowledgeService.deleteDoc(knowledgeId, docId);
     }
 
     @SneakyThrows
-    @GetMapping("file/download/{fileKey}")
+    @GetMapping("file/{fileKey}")
     @Operation(summary = "下载知识库文件")
     public ResponseEntity<ByteArrayResource> downloadFile(@PathVariable String fileKey) {
         byte[] bytes = knowledgeService.downloadDocFile(fileKey);

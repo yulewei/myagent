@@ -1,161 +1,205 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="ai.myagent.mapper.KnowledgeDocMapper">
-  <resultMap id="BaseResultMap" type="ai.myagent.model.entity.KnowledgeDoc">
-    <!-- @mbg.generated -->
-    <id column="id" jdbcType="VARCHAR" property="id" />
-    <result column="knowledge_id" jdbcType="VARCHAR" property="knowledgeId" />
-    <result column="type" jdbcType="VARCHAR" property="type" />
-    <result column="content" jdbcType="VARCHAR" property="content" />
-    <result column="embed_status" jdbcType="VARCHAR" property="embedStatus" />
-    <result column="embed_ids" jdbcType="VARCHAR" property="embedIds" />
-    <result column="embed_time" jdbcType="BIGINT" property="embedTime" />
-    <result column="create_time" jdbcType="BIGINT" property="createTime" />
-    <result column="delete_time" jdbcType="BIGINT" property="deleteTime" />
-  </resultMap>
-  <sql id="Base_Column_List">
-    <!-- @mbg.generated -->
-    id, knowledge_id, type, content, embed_status, embed_ids, embed_time, create_time, 
-    delete_time
-  </sql>
-  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
-    <!-- @mbg.generated -->
-    select 
-    <include refid="Base_Column_List" />
-    from t_knowledge_doc
-    where id = #{id,jdbcType=VARCHAR}
-  </select>
-  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
-    <!-- @mbg.generated -->
-    delete from t_knowledge_doc
-    where id = #{id,jdbcType=VARCHAR}
-  </delete>
-  <insert id="insert" parameterType="ai.myagent.model.entity.KnowledgeDoc">
-    <!-- @mbg.generated -->
-    insert into t_knowledge_doc (id, knowledge_id, type, 
-      content, embed_status, embed_ids, 
-      embed_time, create_time, delete_time
-      )
-    values (#{id,jdbcType=VARCHAR}, #{knowledgeId,jdbcType=VARCHAR}, #{type,jdbcType=VARCHAR}, 
-      #{content,jdbcType=VARCHAR}, #{embedStatus,jdbcType=VARCHAR}, #{embedIds,jdbcType=VARCHAR}, 
-      #{embedTime,jdbcType=BIGINT}, #{createTime,jdbcType=BIGINT}, #{deleteTime,jdbcType=BIGINT}
-      )
-  </insert>
-  <insert id="insertSelective" parameterType="ai.myagent.model.entity.KnowledgeDoc">
-    <!-- @mbg.generated -->
-    insert into t_knowledge_doc
-    <trim prefix="(" suffix=")" suffixOverrides=",">
-      <if test="id != null">
-        id,
-      </if>
-      <if test="knowledgeId != null">
-        knowledge_id,
-      </if>
-      <if test="type != null">
-        type,
-      </if>
-      <if test="content != null">
-        content,
-      </if>
-      <if test="embedStatus != null">
-        embed_status,
-      </if>
-      <if test="embedIds != null">
-        embed_ids,
-      </if>
-      <if test="embedTime != null">
-        embed_time,
-      </if>
-      <if test="createTime != null">
-        create_time,
-      </if>
-      <if test="deleteTime != null">
-        delete_time,
-      </if>
-    </trim>
-    <trim prefix="values (" suffix=")" suffixOverrides=",">
-      <if test="id != null">
-        #{id,jdbcType=VARCHAR},
-      </if>
-      <if test="knowledgeId != null">
-        #{knowledgeId,jdbcType=VARCHAR},
-      </if>
-      <if test="type != null">
-        #{type,jdbcType=VARCHAR},
-      </if>
-      <if test="content != null">
-        #{content,jdbcType=VARCHAR},
-      </if>
-      <if test="embedStatus != null">
-        #{embedStatus,jdbcType=VARCHAR},
-      </if>
-      <if test="embedIds != null">
-        #{embedIds,jdbcType=VARCHAR},
-      </if>
-      <if test="embedTime != null">
-        #{embedTime,jdbcType=BIGINT},
-      </if>
-      <if test="createTime != null">
-        #{createTime,jdbcType=BIGINT},
-      </if>
-      <if test="deleteTime != null">
-        #{deleteTime,jdbcType=BIGINT},
-      </if>
-    </trim>
-  </insert>
-  <update id="updateByPrimaryKeySelective" parameterType="ai.myagent.model.entity.KnowledgeDoc">
-    <!-- @mbg.generated -->
-    update t_knowledge_doc
-    <set>
-      <if test="knowledgeId != null">
-        knowledge_id = #{knowledgeId,jdbcType=VARCHAR},
-      </if>
-      <if test="type != null">
+    <resultMap id="BaseResultMap" type="ai.myagent.model.entity.KnowledgeDoc">
+        <!-- @mbg.generated -->
+        <id column="id" jdbcType="VARCHAR" property="id"/>
+        <result column="knowledge_id" jdbcType="VARCHAR" property="knowledgeId"/>
+        <result column="type" jdbcType="VARCHAR" property="type"/>
+        <result column="content" jdbcType="VARCHAR" property="content"/>
+        <result column="embed_status" jdbcType="VARCHAR" property="embedStatus"/>
+        <result column="embed_ids" jdbcType="VARCHAR" property="embedIds"/>
+        <result column="embed_time" jdbcType="BIGINT" property="embedTime"/>
+        <result column="create_time" jdbcType="BIGINT" property="createTime"/>
+        <result column="delete_time" jdbcType="BIGINT" property="deleteTime"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        <!-- @mbg.generated -->
+        id, knowledge_id, type, content, embed_status, embed_ids, embed_time, create_time,
+        delete_time
+    </sql>
+    <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+        <!-- @mbg.generated -->
+        select
+        <include refid="Base_Column_List"/>
+        from t_knowledge_doc
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+        <!-- @mbg.generated -->
+        delete from t_knowledge_doc
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+    <insert id="insert" parameterType="ai.myagent.model.entity.KnowledgeDoc">
+        <!-- @mbg.generated -->
+        insert into t_knowledge_doc (id, knowledge_id, type,
+        content, embed_status, embed_ids,
+        embed_time, create_time, delete_time
+        )
+        values (#{id,jdbcType=VARCHAR}, #{knowledgeId,jdbcType=VARCHAR}, #{type,jdbcType=VARCHAR},
+        #{content,jdbcType=VARCHAR}, #{embedStatus,jdbcType=VARCHAR}, #{embedIds,jdbcType=VARCHAR},
+        #{embedTime,jdbcType=BIGINT}, #{createTime,jdbcType=BIGINT}, #{deleteTime,jdbcType=BIGINT}
+        )
+    </insert>
+    <insert id="insertSelective" parameterType="ai.myagent.model.entity.KnowledgeDoc">
+        <!-- @mbg.generated -->
+        insert into t_knowledge_doc
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="knowledgeId != null">
+                knowledge_id,
+            </if>
+            <if test="type != null">
+                type,
+            </if>
+            <if test="content != null">
+                content,
+            </if>
+            <if test="embedStatus != null">
+                embed_status,
+            </if>
+            <if test="embedIds != null">
+                embed_ids,
+            </if>
+            <if test="embedTime != null">
+                embed_time,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+            <if test="deleteTime != null">
+                delete_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="knowledgeId != null">
+                #{knowledgeId,jdbcType=VARCHAR},
+            </if>
+            <if test="type != null">
+                #{type,jdbcType=VARCHAR},
+            </if>
+            <if test="content != null">
+                #{content,jdbcType=VARCHAR},
+            </if>
+            <if test="embedStatus != null">
+                #{embedStatus,jdbcType=VARCHAR},
+            </if>
+            <if test="embedIds != null">
+                #{embedIds,jdbcType=VARCHAR},
+            </if>
+            <if test="embedTime != null">
+                #{embedTime,jdbcType=BIGINT},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=BIGINT},
+            </if>
+            <if test="deleteTime != null">
+                #{deleteTime,jdbcType=BIGINT},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="ai.myagent.model.entity.KnowledgeDoc">
+        <!-- @mbg.generated -->
+        update t_knowledge_doc
+        <set>
+            <if test="knowledgeId != null">
+                knowledge_id = #{knowledgeId,jdbcType=VARCHAR},
+            </if>
+            <if test="type != null">
+                type = #{type,jdbcType=VARCHAR},
+            </if>
+            <if test="content != null">
+                content = #{content,jdbcType=VARCHAR},
+            </if>
+            <if test="embedStatus != null">
+                embed_status = #{embedStatus,jdbcType=VARCHAR},
+            </if>
+            <if test="embedIds != null">
+                embed_ids = #{embedIds,jdbcType=VARCHAR},
+            </if>
+            <if test="embedTime != null">
+                embed_time = #{embedTime,jdbcType=BIGINT},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime,jdbcType=BIGINT},
+            </if>
+            <if test="deleteTime != null">
+                delete_time = #{deleteTime,jdbcType=BIGINT},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="ai.myagent.model.entity.KnowledgeDoc">
+        <!-- @mbg.generated -->
+        update t_knowledge_doc
+        set knowledge_id = #{knowledgeId,jdbcType=VARCHAR},
         type = #{type,jdbcType=VARCHAR},
-      </if>
-      <if test="content != null">
         content = #{content,jdbcType=VARCHAR},
-      </if>
-      <if test="embedStatus != null">
         embed_status = #{embedStatus,jdbcType=VARCHAR},
-      </if>
-      <if test="embedIds != null">
         embed_ids = #{embedIds,jdbcType=VARCHAR},
-      </if>
-      <if test="embedTime != null">
         embed_time = #{embedTime,jdbcType=BIGINT},
-      </if>
-      <if test="createTime != null">
         create_time = #{createTime,jdbcType=BIGINT},
-      </if>
-      <if test="deleteTime != null">
-        delete_time = #{deleteTime,jdbcType=BIGINT},
-      </if>
-    </set>
-    where id = #{id,jdbcType=VARCHAR}
-  </update>
-  <update id="updateByPrimaryKey" parameterType="ai.myagent.model.entity.KnowledgeDoc">
-    <!-- @mbg.generated -->
-    update t_knowledge_doc
-    set knowledge_id = #{knowledgeId,jdbcType=VARCHAR},
-      type = #{type,jdbcType=VARCHAR},
-      content = #{content,jdbcType=VARCHAR},
-      embed_status = #{embedStatus,jdbcType=VARCHAR},
-      embed_ids = #{embedIds,jdbcType=VARCHAR},
-      embed_time = #{embedTime,jdbcType=BIGINT},
-      create_time = #{createTime,jdbcType=BIGINT},
-      delete_time = #{deleteTime,jdbcType=BIGINT}
-    where id = #{id,jdbcType=VARCHAR}
-  </update>
+        delete_time = #{deleteTime,jdbcType=BIGINT}
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
 
+    <select id="queryList" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from t_knowledge_doc
+        <where>
+            <if test="id != null">
+                id = #{id,jdbcType=VARCHAR}
+            </if>
+            <if test="knowledgeId != null">
+                knowledge_id = #{knowledgeId,jdbcType=VARCHAR}
+            </if>
+            and delete_time is null
+        </where>
+        order by create_time desc
+    </select>
 
-  <select id="queryDocList" resultMap="BaseResultMap">
-      select
-      <include refid="Base_Column_List" />
-      from t_knowledge_doc
-      where knowledge_id = #{knowledgeId,jdbcType=VARCHAR}
-      and delete_time is null
-      order by create_time desc
-  </select>
-
+    <update id="updateByCondition">
+        update t_knowledge_doc
+        <set>
+            <if test="record.knowledgeId != null">
+                knowledge_id = #{record.knowledgeId,jdbcType=VARCHAR},
+            </if>
+            <if test="record.type != null">
+                type = #{record.type,jdbcType=VARCHAR},
+            </if>
+            <if test="record.content != null">
+                content = #{record.content,jdbcType=VARCHAR},
+            </if>
+            <if test="record.embedStatus != null">
+                embed_status = #{record.embedStatus,jdbcType=VARCHAR},
+            </if>
+            <if test="record.embedIds != null">
+                embed_ids = #{record.embedIds,jdbcType=VARCHAR},
+            </if>
+            <if test="record.embedTime != null">
+                embed_time = #{record.embedTime,jdbcType=BIGINT},
+            </if>
+            <if test="record.createTime != null">
+                create_time = #{record.createTime,jdbcType=BIGINT},
+            </if>
+            <if test="record.deleteTime != null">
+                delete_time = #{record.deleteTime,jdbcType=BIGINT},
+            </if>
+        </set>
+        <where>
+            <if test="query.id != null">
+                id = #{query.id,jdbcType=VARCHAR}
+            </if>
+            <if test="query.knowledgeId != null">
+                knowledge_id = #{query.knowledgeId,jdbcType=VARCHAR}
+            </if>
+            and delete_time is null
+        </where>
+    </update>
 </mapper>

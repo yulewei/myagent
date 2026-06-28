@@ -10,6 +10,7 @@ import ai.myagent.model.vo.KnowledgeResp;
 import ai.myagent.util.DateUtils;
 import ai.myagent.util.JsonUtils;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
 import java.util.List;
@@ -44,15 +45,11 @@ public interface KnowledgeConverter {
                 .build();
     }
 
-   default KnowledgeResp toVo(Knowledge knowledge, List<KnowledgeDocDto> dtoList) {
-        return KnowledgeResp.builder()
-                .id(knowledge.getId())
-                .name(knowledge.getName())
-                .createTime(DateUtils.toLocalDateTime(knowledge.getCreateTime()))
-                .updateTime(DateUtils.toLocalDateTime(knowledge.getUpdateTime()))
-                .docList(toVoList(dtoList))
-                .build();
-   }
+    @Mapping(target = "docList", ignore = true)
+    KnowledgeResp toVo(Knowledge knowledge);
+
+    @Mapping(target = "docList", source = "dtoList")
+    KnowledgeResp toVo(Knowledge knowledge, List<KnowledgeDocDto> dtoList);
 
     KnowledgeDocResp toVo(KnowledgeDocDto dto);
 
