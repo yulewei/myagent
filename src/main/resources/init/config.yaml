@@ -1,23 +1,26 @@
 default:
+  # 默认会话配置
   session:
     model-id: deepseek-v4-flash
     tools: [ File, Shell, Glob, Grep, WebFetch, Skill ]
+  # 默认嵌入模型配置
   embedding:
     provider-id: GLM
     model-id: embedding-3
     dimensions: 256
+# 模型提供商配置
 providers:
   - id: DeepSeek
     name: DeepSeek
     base-url: https://api.deepseek.com
-    api-key: "${DEEPSEEK_API_KEY}"
+    api-key: ${DEEPSEEK_API_KEY}
     models:
       - id: deepseek-v4-flash
       - id: deepseek-v4-pro
   - id: OpenAI
     name: OpenAI
     base-url: https://api.openai.com/v1
-    api-key: "${OPENAI_API_KEY}"
+    api-key: ${OPENAI_API_KEY}
     models:
       - id: gpt-5.5
       - id: gpt-5.5-pro
@@ -26,7 +29,7 @@ providers:
   - id: GLM
     name: 智谱GLM
     base-url: https://open.bigmodel.cn/api/paas/v4
-    api-key: "${GLM_API_KEY}"
+    api-key: ${GLM_API_KEY}
     models:
       - id: glm-5
       - id: glm-5.1
@@ -35,7 +38,7 @@ providers:
   - id: Qwen
     name: 阿里云百炼
     base-url: https://dashscope.aliyuncs.com/compatible-mode/v1
-    api-key: "${QWEN_API_KEY}"
+    api-key: ${QWEN_API_KEY}
     models:
       - id: qwen3.6-flash
       - id: qwen3.6-plus

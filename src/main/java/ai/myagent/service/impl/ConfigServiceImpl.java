@@ -379,8 +379,8 @@ public class ConfigServiceImpl extends FileAlterationListenerAdaptor implements 
         return embeddingModel;
     }
 
-    private String resolveApiKey(ProviderEnum provider, String apiKey) {
-        String resolvedApiKey = env.resolvePlaceholders(apiKey);
+    private String resolveApiKey(ProviderEnum provider, String apiKeyReq) {
+        String apiKey = env.resolvePlaceholders(apiKeyReq);
         // 若环境变量中存在 api_key 配置，则优先使用环境变量中的值，覆盖配置文件中的值
         apiKey = switch (provider) {
             case OPENAI -> ObjectUtils.getIfNull(System.getenv(envOpenAiApiKey), apiKey);
@@ -388,6 +388,6 @@ public class ConfigServiceImpl extends FileAlterationListenerAdaptor implements 
             case GLM -> ObjectUtils.getIfNull(System.getenv(envGlmApiKey), apiKey);
             case QWEN -> ObjectUtils.getIfNull(System.getenv(envQwenApiKey), apiKey);
         };
-        return resolvedApiKey;
+        return apiKey;
     }
 }

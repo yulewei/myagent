@@ -59,7 +59,7 @@ export QWEN_API_KEY=sk-xxx
 # 创建新会话
 curl -X POST http://localhost:8989/api/session/new \
   -H "Content-Type: application/json" \
-  -d '{ "sessionId": "deepseek:agent", "modelId": "deepseek-v4-flash", "tools": [] }'
+  -d '{ "sessionId": "deepseek:agent", "modelId": "deepseek-v4-flash" }'
 
 # 发送消息（同步）
 curl -X POST http://localhost:8989/api/session/chat \
@@ -69,12 +69,16 @@ curl -X POST http://localhost:8989/api/session/chat \
 # 流式对话（SSE）
 curl -X POST http://localhost:8989/api/session/chat/stream \
   -H "Content-Type: application/json" \
-  -d '{"sessionId": "deepseek:chat", "content": "查询杭州天气"}'
+  -d '{"sessionId": "deepseek:agent", "content": "查询杭州天气"}'
+
+# 将文件 `README.md` 上传到知识库
+curl -X POST http://localhost:8989/api/knowledge/kb/upload/file \
+  -H "Content-Type: multipart/form-data" --form "file=@README.md"
 
 # 使用知识库，增强大模型的对话生成（RAG）
 curl -X POST http://localhost:8989/api/session/chat \
   -H "Content-Type: application/json" \
-  -d '{ "sessionId": "deepseek:chat", "content": "MyAgent 项目有哪些内置工具？", "knowledgeId": "kb" }'
+  -d '{ "sessionId": "deepseek:agent", "content": "MyAgent 项目有哪些内置工具？", "knowledgeId": "kb" }'
 ```
 
 其他接口调用示例，参见 [api-test.http](api-test.http) 文件。
@@ -114,7 +118,7 @@ default:
   session:
     model-id: deepseek-v4-flash
     tools: [ File, Shell, Glob, Grep, WebFetch, Skill ]
-  # 默认嵌入模型配置
+  # 默认向量化模型配置
   embedding:
     provider-id: GLM
     model-id: embedding-3
@@ -144,16 +148,16 @@ providers:
 ```
 
 + 完整的默认配置文件参见 [config.yaml](src/main/resources/init/config.yaml)。服务首次启动时，该文件会自动拷贝到
-`~/myagent/config.yaml` 。
-+ 模型提供商 provider 的 id 必须是 `DeepSeek`、`OpenAI`、`GLM`、`Qwen` 中的一个，否则无法识别。
-若某模型提供商提供兼容 OpenAI 的接口，可以将 id 配置未 `OpenAI`，其他配置项根据实际情况填写。
-+ 若要服务正常运行，`config.yaml` 设置的默认模型的 API_KEY，必须先配置对应的环境变量或直接在 `config.yaml` 中设置，若同时配置，环境变量优先。
+  `~/myagent/config.yaml` 。
++ 模型提供商 provider 的 `id` **必须**是 `DeepSeek`、`OpenAI`、`GLM`、`Qwen` 中的一个，否则无法识别。
+  若某模型提供商提供兼容 OpenAI 的接口，可以将 `id` 配置为 `OpenAI`，其他配置项根据实际情况填写。
++ 若要服务正常运行，`config.yaml` 设置的默认模型的 API_KEY，**必须**先配置对应的环境变量或直接在 `config.yaml`
+  中设置，若同时配置，环境变量优先。
 + 修改 `config.yaml` 后配置会自动热加载，无需重启服务。
 
 ## API 概览
 
-服务启动后，可以访问完整的 **Swagger REST API 文档
-**: [http://localhost:8989/swagger-ui/index.html](http://localhost:8989/swagger-ui/index.html)
+服务启动后，可以访问完整的 Swagger REST API 文档：[http://localhost:8989/swagger-ui/index.html](http://localhost:8989/swagger-ui/index.html)
 
 ### 配置相关
 
@@ -194,22 +198,22 @@ providers:
 
 ### 知识库相关
 
-| 方法       | 路径                                           | 说明         |
-|----------|----------------------------------------------|------------|
-| `GET`    | `/api/knowledge/list`                        | 查询知识库列表    |
-| `GET`    | `/api/knowledge/{knowledgeId}`               | 查询知识库详情    |
-| `POST`   | `/api/knowledge/new`                         | 创建知识库      |
-| `POST`   | `/api/knowledge/update`                      | 更新知识库      |
-| `DELETE` | `/api/knowledge/{knowledgeId}`               | 删除知识库      |
-| `GET`    | `/api/knowledge/{knowledgeId}/doc/list`      | 查询知识库列表    |
-| `GET`    | `/api/knowledge/{knowledgeId}/{docId}`       | 查询知识库列表    |
-| `POST`   | `/api/knowledge/{knowledgeId}/upload/file`   | 添加文档文件到知识库 |
-| `POST`   | `/api/knowledge/{knowledgeId}/upload/text`   | 添加纯文本到知识库  |
-| `POST`   | `/api/knowledge/{knowledgeId}/{docId}/embed` | 添加纯文本到知识库  |
-| `DELETE` | `/api/knowledge/{knowledgeId}/{docId}`       | 删除知识库文档    |
-| `GET`    | `/api/knowledge/file/{fileKey}`              | 下载知识库文件    |
+| 方法       | 路径                                           | 说明           |
+|----------|----------------------------------------------|--------------|
+| `GET`    | `/api/knowledge/list`                        | 查询知识库列表      |
+| `GET`    | `/api/knowledge/{knowledgeId}`               | 查询知识库详情      |
+| `POST`   | `/api/knowledge/new`                         | 创建知识库        |
+| `POST`   | `/api/knowledge/update`                      | 更新知识库        |
+| `DELETE` | `/api/knowledge/{knowledgeId}`               | 删除知识库        |
+| `GET`    | `/api/knowledge/{knowledgeId}/doc/list`      | 查询知识库列表      |
+| `GET`    | `/api/knowledge/{knowledgeId}/{docId}`       | 查询知识库列表      |
+| `POST`   | `/api/knowledge/{knowledgeId}/upload/file`   | 添加文档文件到知识库   |
+| `POST`   | `/api/knowledge/{knowledgeId}/upload/text`   | 添加纯文本到知识库    |
+| `POST`   | `/api/knowledge/{knowledgeId}/{docId}/embed` | （重新）向量化知识库文档 |
+| `DELETE` | `/api/knowledge/{knowledgeId}/{docId}`       | 删除知识库文档      |
+| `GET`    | `/api/knowledge/file/{fileKey}`              | 下载知识库文件      |
 
-
++ 上传的文档文件，基于 Apache Tika 库实现文本提取，格式支持包括 pdf、doc/docx、ppt/pptx、html、txt 等，完整支持格式列表参见 [Apache Tika](https://tika.apache.org/3.1.0/formats.html)。
 
 ## 数据库表设计
 
@@ -220,7 +224,7 @@ providers:
 | `t_knowledge`       | 知识库表   |
 | `t_knowledge_doc`   | 知识库文档表 |
 
-+ 完整表定义参见 [schema.sql](src/main/resources/schema.sql)。
++ 完整表定义参见 [schema.sql](src/main/resources/init/schema.sql)。
 + 服务运行时使用 SQLite 数据库，内嵌数据库，无需额外配置。
 
 ## 技术栈

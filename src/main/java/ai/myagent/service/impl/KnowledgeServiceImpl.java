@@ -156,6 +156,33 @@ public class KnowledgeServiceImpl implements KnowledgeService {
     }
 
     /**
+     * 删除知识库文档
+     */
+    @Override
+    public void deleteDoc(String knowledgeId, String docId) {
+        KnowledgeDocDto doc = knowledgeRepo.queryDoc(knowledgeId, docId);
+        if (doc == null) {
+            log.warn("文档不存在：{}", docId);
+            return;
+        }
+        if (Objects.equals(doc.getType(), KnowledgeDocEnum.FILE.getCode())) {
+            dataDir = dataDir.endsWith(File.separator) ? dataDir : dataDir + File.separator;
+            uploadFileDir = uploadFileDir.endsWith(File.separator) ? uploadFileDir : uploadFileDir + File.separator;
+            String filePath = dataDir + uploadFileDir + doc.getFileInfo().getFileKey();
+            File file = new File(filePath);
+            if (file.exists()) {
+                log.info("删除文件：{}", filePath);
+                file.delete();
+            }
+        }
+        if (doc.getEmbedIds() != null && !doc.getEmbedIds().isEmpty()) {
+            // 删除向量数据库中已有的向量
+            vectorStore.delete(doc.getEmbedIds());
+        }
+        knowledgeRepo.deleteDoc(docId);
+    }
+
+    /**
      * 查询知识库文档列表
      */
     @Override
@@ -243,33 +270,6 @@ public class KnowledgeServiceImpl implements KnowledgeService {
     }
 
     /**
-     * 删除知识库文档
-     */
-    @Override
-    public void deleteDoc(String knowledgeId, String docId) {
-        KnowledgeDocDto doc = knowledgeRepo.queryDoc(knowledgeId, docId);
-        if (doc == null) {
-            log.warn("文档不存在：{}", docId);
-            return;
-        }
-        if (Objects.equals(doc.getType(), KnowledgeDocEnum.FILE.getCode())) {
-            dataDir = dataDir.endsWith(File.separator) ? dataDir : dataDir + File.separator;
-            uploadFileDir = uploadFileDir.endsWith(File.separator) ? uploadFileDir : uploadFileDir + File.separator;
-            String filePath = dataDir + uploadFileDir + doc.getFileInfo().getFileKey();
-            File file = new File(filePath);
-            if (file.exists()) {
-                log.info("删除文件：{}", filePath);
-                file.delete();
-            }
-        }
-        if (doc.getEmbedIds() != null && !doc.getEmbedIds().isEmpty()) {
-            // 删除向量数据库中已有的向量
-            vectorStore.delete(doc.getEmbedIds());
-        }
-        knowledgeRepo.deleteDoc(docId);
-    }
-
-    /**
      * 向量化知识库文档（若已经向量化，则重新计算）
      */
     @Async
@@ -336,4 +336,6 @@ public class KnowledgeServiceImpl implements KnowledgeService {
         File file = new File(filePath);
         return FileUtils.readFileToByteArray(file);
     }
+
+
 }
