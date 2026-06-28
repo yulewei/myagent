@@ -29,7 +29,7 @@ import java.time.LocalDateTime;
  * @since 2026/6/21
  */
 @Slf4j
-@SpringBootTest(classes = AgentApplication.class)
+@SpringBootTest(classes = AgentApplication.class, properties = {"spring.profiles.active=dev"})
 public class ToolsTest {
 
     @Resource

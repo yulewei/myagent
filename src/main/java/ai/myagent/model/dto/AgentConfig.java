@@ -1,5 +1,6 @@
 package ai.myagent.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.util.List;
@@ -13,24 +14,38 @@ import java.util.List;
 public class AgentConfig {
 
     /**
-     * 默认模型配置
+     * 默认配置
      */
-    private SessionDefaultConfig sessionDefault;
+    @JsonProperty("default")
+    private DefaultConfig defaultConfig;
 
     /**
      * 模型服务商配置列表
      */
     private List<ProviderConfig> providers;
 
+    @Data
+    public static class DefaultConfig {
+
+        private SessionConfig session;
+
+        private EmbeddingConfig embedding;
+    }
+
     /**
      * 默认配置
      */
     @Data
-    public static class SessionDefaultConfig {
+    public static class SessionConfig {
         /**
          * 默认会话标题
          */
         private String title;
+
+        /**
+         * 服务商ID
+         */
+        private String provider;
 
         /**
          * 默认模型 ID，如 "deepseek-v4-flash"。
@@ -46,6 +61,24 @@ public class AgentConfig {
          * 默认工具集
          */
         private List<String> tools;
+    }
+
+    @Data
+    public static class EmbeddingConfig {
+        /**
+         * 服务商ID
+         */
+        private String providerId;
+
+        /**
+         * 默认模型 ID，如 "deepseek-v4-flash"。
+         */
+        private String modelId;
+
+        /**
+         * 默认向量维度
+         */
+        private Integer dimensions;
     }
 
     /**

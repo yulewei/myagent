@@ -48,7 +48,7 @@ public class SessionRepo {
         return session;
     }
 
-    public String insert(SessionNewReq request) {
+    public String insertSession(SessionNewReq request) {
         if (StringUtils.isBlank(request.getSessionId())) {
             request.setSessionId(IdUtils.fastSimpleUUID());
         }

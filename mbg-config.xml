@@ -55,11 +55,17 @@
         </javaClientGenerator>
 
         <!-- !!!! Table Configurations !!!! -->
-        <table tableName="t_session" domainObjectName="Session">
+<!--        <table tableName="t_session" domainObjectName="Session">-->
+<!--        </table>-->
+
+<!--        <table tableName="t_session_message" domainObjectName="SessionMessage">-->
+<!--        </table>-->
+
+        <table tableName="t_knowledge" domainObjectName="Knowledge">
         </table>
 
-        <table tableName="t_session_message" domainObjectName="SessionMessage">
-        </table>
+<!--        <table tableName="t_knowledge_doc" domainObjectName="KnowledgeDoc">-->
+<!--        </table>-->
 
     </context>
 </generatorConfiguration>

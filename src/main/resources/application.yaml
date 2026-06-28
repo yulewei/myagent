@@ -6,6 +6,14 @@ spring:
   datasource:
     driver-class-name: org.sqlite.JDBC
     url: jdbc:sqlite:${myagent.data-dir}/${myagent.db-file}
+  task:
+    execution:
+      pool:
+        core-size: 8
+        max-size: 20
+        queue-capacity: 100
+        keep-alive: 60s
+        allow-core-thread-timeout: true
 
 server:
   port: 8989
@@ -34,9 +42,11 @@ myagent:
   data-dir: ${user.home}/myagent     # 默认数据目录
   db-file: data.sqlite       # 数据库文件名
   config-file: config.yaml   # Agent 配置文件名
-  init-db-file: classpath:init/data.sqlite       # 初始化数据库文件
-  init-config-file: classpath:init/config.yaml   # 初始化配置文件
+  vec0-install-file: vec0-install.sh
   skills-dir: ${myagent.data-dir}/skills, ${user.home}/.agents/skills
+  knowledge:
+    vector-db-file: vectordb.json
+    upload-file-dir: files
   env:
     # API_KEY 环境变量名
     openai-api-key: OPENAI_API_KEY

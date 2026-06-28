@@ -6,10 +6,12 @@ import ai.myagent.interceptor.LoggingClientInterceptor;
 import ai.myagent.interceptor.LoggingOkHttpInterceptor;
 import ai.myagent.model.dto.AgentConfig;
 import ai.myagent.model.dto.ChatModelDto;
+import ai.myagent.model.dto.EmbeddingModelDto;
 import ai.myagent.model.vo.ModelResp;
 import ai.myagent.model.vo.SkillsVo;
 import ai.myagent.service.ConfigService;
 import ai.myagent.util.JsonUtils;
+import ai.myagent.util.ScriptExecutor;
 import ai.myagent.util.YamlUtils;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
@@ -30,8 +32,12 @@ import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.deepseek.DeepSeekChatModel;
 import org.springframework.ai.deepseek.DeepSeekChatOptions;
 import org.springframework.ai.deepseek.api.DeepSeekApi;
+import org.springframework.ai.document.MetadataMode;
+import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.openai.OpenAiChatOptions;
+import org.springframework.ai.openai.OpenAiEmbeddingModel;
+import org.springframework.ai.openai.OpenAiEmbeddingOptions;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
@@ -50,8 +56,9 @@ import java.util.Objects;
  * @author yulewei
  */
 @Slf4j
-@Service
+@Service("configService")
 public class ConfigServiceImpl extends FileAlterationListenerAdaptor implements ConfigService {
+    public static final String INIT_DIR = "classpath:init/";
 
     @Value("${myagent.env.openai-api-key}")
     private String envOpenAiApiKey;
@@ -66,17 +73,17 @@ public class ConfigServiceImpl extends FileAlterationListenerAdaptor implements 
     private String dataDir;
     @Value("${myagent.config-file}")
     private String configFileName;
-    @Value("${myagent.init-config-file}")
-    private String initConfigFileName;
     @Value("${myagent.db-file}")
     private String dbFileName;
-    @Value("${myagent.init-db-file}")
-    private String initDbFileName;
+    @Value("${myagent.vec0-install-file}")
+    private String vec0InstallFile;
     @Value("#{'${myagent.skills-dir}'.split(',')}")
     private List<String> skillsDir;
 
-    private AgentConfig.SessionDefaultConfig sessionDefault;
+    private AgentConfig.SessionConfig sessionDefault;
+
     private List<ChatModelDto> modelList;
+    private EmbeddingModelDto embeddingModel;
 
     @Resource
     Environment env;
@@ -99,15 +106,31 @@ public class ConfigServiceImpl extends FileAlterationListenerAdaptor implements 
      */
     @SneakyThrows
     private void initDataDir() {
-        File dbFile = new File(dataDir + File.separator + dbFileName);
+        dataDir = dataDir.endsWith(File.separator) ? dataDir : dataDir + File.separator;
+        log.info("初始化数据目录：{}", dataDir);
+        File dbFile = new File(dataDir + dbFileName);
         if (!dbFile.exists()) {
-            File dbInitFile = ResourceUtils.getFile(initDbFileName);
-            FileUtils.copyFile(dbInitFile, dbFile);
+            File file = ResourceUtils.getFile(INIT_DIR + dbFileName);
+            FileUtils.copyFile(file, dbFile);
         }
-        File configFile = new File(dataDir + File.separator + configFileName);
+        File installFile = new File(dataDir + vec0InstallFile);
+        if (!installFile.exists()) {
+            File file = ResourceUtils.getFile(INIT_DIR + vec0InstallFile);
+            FileUtils.copyFile(file, installFile);
+
+            ScriptExecutor.Result result = ScriptExecutor.run(dataDir + vec0InstallFile);
+            if (result.isSuccess()) {
+                log.info("sqlite 扩展 vec0 下载成功");
+            } else {
+                log.error("sqlite 扩展 vec0 下载失败：{}", result.getError());
+                System.exit(1);
+            }
+        }
+
+        File configFile = new File(dataDir + configFileName);
         if (!configFile.exists()) {
-            File configInitFile = ResourceUtils.getFile(initConfigFileName);
-            FileUtils.copyFile(configInitFile, configFile);
+            File file = ResourceUtils.getFile(INIT_DIR + configFile);
+            FileUtils.copyFile(file, configFile);
         }
     }
 
@@ -138,11 +161,13 @@ public class ConfigServiceImpl extends FileAlterationListenerAdaptor implements 
      */
     @SneakyThrows
     private boolean loadConfigFile() {
-        String configFileName = this.dataDir + File.separator + this.configFileName;
+        dataDir = dataDir.endsWith(File.separator) ? dataDir : dataDir + File.separator;
+        String configFileName = dataDir + this.configFileName;
         String content = FileUtils.readFileToString(new File(configFileName), StandardCharsets.UTF_8);
         AgentConfig config = YamlUtils.parse(content, AgentConfig.class);
-        if (config == null || config.getSessionDefault() == null
-                || config.getSessionDefault().getModelId() == null) {
+        if (config == null || config.getDefaultConfig() == null
+                || config.getDefaultConfig().getSession() == null
+                || config.getDefaultConfig().getSession().getModelId() == null) {
             log.error("加载配置文件：{}，未配置默认模型", configFileName);
             return false;
         }
@@ -154,17 +179,21 @@ public class ConfigServiceImpl extends FileAlterationListenerAdaptor implements 
                 .filter(ChatModelDto::getIsDefault)
                 .findFirst().orElse(null);
         if (defaultModel == null) {
-            log.error("加载配置文件 {} ：默认模型 {}，未正确配置", configFileName, config.getSessionDefault().getModelId());
+            log.error("加载配置文件 {} ：默认模型 {}，未正确配置", configFileName, config.getDefaultConfig().getSession().getModelId());
             return false;
         }
-        sessionDefault = config.getSessionDefault();
-        log.info("加载配置文件 {} ：默认模型：{}", configFileName, config.getSessionDefault().getModelId());
+        sessionDefault = config.getDefaultConfig().getSession();
+        log.info("加载配置文件 {} ：默认模型：{}", configFileName, config.getDefaultConfig().getSession().getModelId());
+        embeddingModel = initEmbeddingModel(config);
+        if (embeddingModel != null) {
+            log.info("加载配置文件 {} ：默认向量化模型 {}", configFileName, config.getDefaultConfig().getEmbedding().getModelId());
+        }
         return true;
     }
 
 
     private List<ChatModelDto> initChatModels(AgentConfig config) {
-        AgentConfig.SessionDefaultConfig sessionDefault = config.getSessionDefault();
+        AgentConfig.SessionConfig sessionDefault = config.getDefaultConfig().getSession();
         List<AgentConfig.ProviderConfig> providers = config.getProviders();
         List<ChatModelDto> list = new ArrayList<>();
         for (AgentConfig.ProviderConfig p : providers) {
@@ -181,20 +210,13 @@ public class ConfigServiceImpl extends FileAlterationListenerAdaptor implements 
         return list;
     }
 
-    private ChatModelDto initChatModel(AgentConfig.SessionDefaultConfig sessionDefault,
+    private ChatModelDto initChatModel(AgentConfig.SessionConfig sessionDefault,
                                        AgentConfig.ProviderConfig p, AgentConfig.ModelInfo model) {
-        String apiKey = env.resolvePlaceholders(p.getApiKey());
         ProviderEnum provider = ProviderEnum.of(p.getId());
         if (provider == null) {
             return null;
         }
-        // 若环境变量中存在 api_key 配置，则优先使用环境变量中的值，覆盖配置文件中的值
-        apiKey = switch (provider) {
-            case OPENAI -> ObjectUtils.getIfNull(System.getenv(envOpenAiApiKey), apiKey);
-            case DEEPSEEK -> ObjectUtils.getIfNull(System.getenv(envDeepSeekApiKey), apiKey);
-            case GLM -> ObjectUtils.getIfNull(System.getenv(envGlmApiKey), apiKey);
-            case QWEN -> ObjectUtils.getIfNull(System.getenv(envQwenApiKey), apiKey);
-        };
+        String apiKey = this.resolveApiKey(provider, p.getApiKey());
         ChatModel chatModel;
         if (provider != ProviderEnum.DEEPSEEK) {
             chatModel = OpenAiChatModel.builder()
@@ -235,6 +257,44 @@ public class ConfigServiceImpl extends FileAlterationListenerAdaptor implements 
                 .build();
     }
 
+    private EmbeddingModelDto initEmbeddingModel(AgentConfig config) {
+        AgentConfig.EmbeddingConfig embeddingDefault = config.getDefaultConfig().getEmbedding();
+        ProviderEnum provider = ProviderEnum.of(embeddingDefault.getProviderId());
+        if (provider == null) {
+            return null;
+        }
+        AgentConfig.ProviderConfig p = config.getProviders().stream()
+                .filter(e -> e.getId().equals(embeddingDefault.getProviderId()))
+                .findFirst().orElse(null);
+        if (p == null) {
+            return null;
+        }
+        AgentConfig.ModelInfo model = p.getModels().stream()
+                .filter(e -> e.getId().equals(embeddingDefault.getModelId()))
+                .findFirst().orElse(null);
+        if (model == null) {
+            return null;
+        }
+        String apiKey = this.resolveApiKey(provider, p.getApiKey());
+        EmbeddingModel embeddingModel = OpenAiEmbeddingModel.builder()
+                .metadataMode(MetadataMode.EMBED)
+                .options(OpenAiEmbeddingOptions.builder()
+                        .apiKey(apiKey)
+                        .baseUrl(p.getBaseUrl())
+                        .model(embeddingDefault.getModelId())
+                        .dimensions(embeddingDefault.getDimensions())
+                        .build())
+                .build();
+        return EmbeddingModelDto.builder()
+                .providerId(p.getId())
+                .providerName(p.getName())
+                .modelId(model.getId())
+                .baseUrl(p.getBaseUrl())
+                .apiKey(apiKey)
+                .embeddingModel(embeddingModel)
+                .build();
+    }
+
     @Override
     public void reloadConfig() {
         loadConfigFile();
@@ -258,15 +318,16 @@ public class ConfigServiceImpl extends FileAlterationListenerAdaptor implements 
         for (ChatModelDto dto : modelList) {
             dto.setIsDefault(dto.getModelId().equals(modelId));
         }
-        String configFileName = this.dataDir + File.separator + this.configFileName;
+        dataDir = dataDir.endsWith(File.separator) ? dataDir : dataDir + File.separator;
+        String configFileName = dataDir + this.configFileName;
         String content = FileUtils.readFileToString(new File(configFileName), StandardCharsets.UTF_8);
         AgentConfig config = YamlUtils.parse(content, AgentConfig.class);
-        config.getSessionDefault().setModelId(modelId);
+        config.getDefaultConfig().getSession().setModelId(modelId);
         FileUtils.writeStringToFile(new File(configFileName), YamlUtils.toYaml(config), StandardCharsets.UTF_8);
     }
 
     @Override
-    public AgentConfig.SessionDefaultConfig querySessionDefault() {
+    public AgentConfig.SessionConfig querySessionDefault() {
         return sessionDefault;
     }
 
@@ -311,5 +372,22 @@ public class ConfigServiceImpl extends FileAlterationListenerAdaptor implements 
             list.add(SkillsVo.builder().dir(dir).skills(skills).build());
         }
         return list;
+    }
+
+    @Override
+    public EmbeddingModelDto queryEmbeddingModel() {
+        return embeddingModel;
+    }
+
+    private String resolveApiKey(ProviderEnum provider, String apiKey) {
+        String resolvedApiKey = env.resolvePlaceholders(apiKey);
+        // 若环境变量中存在 api_key 配置，则优先使用环境变量中的值，覆盖配置文件中的值
+        apiKey = switch (provider) {
+            case OPENAI -> ObjectUtils.getIfNull(System.getenv(envOpenAiApiKey), apiKey);
+            case DEEPSEEK -> ObjectUtils.getIfNull(System.getenv(envDeepSeekApiKey), apiKey);
+            case GLM -> ObjectUtils.getIfNull(System.getenv(envGlmApiKey), apiKey);
+            case QWEN -> ObjectUtils.getIfNull(System.getenv(envQwenApiKey), apiKey);
+        };
+        return resolvedApiKey;
     }
 }

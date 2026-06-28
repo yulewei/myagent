@@ -26,6 +26,7 @@ import org.springframework.ai.chat.client.AdvisorParams;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.ChatClientMessageAggregator;
 import org.springframework.ai.chat.client.ChatClientResponse;
+import org.springframework.ai.chat.client.advisor.api.Advisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.ai.chat.messages.Message;
@@ -37,8 +38,14 @@ import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.model.tool.ToolCallingChatOptions;
 import org.springframework.ai.model.tool.ToolCallingManager;
 import org.springframework.ai.model.tool.ToolExecutionResult;
+import org.springframework.ai.rag.advisor.RetrievalAugmentationAdvisor;
+import org.springframework.ai.rag.generation.augmentation.ContextualQueryAugmenter;
+import org.springframework.ai.rag.retrieval.search.VectorStoreDocumentRetriever;
 import org.springframework.ai.support.ToolCallbacks;
 import org.springframework.ai.tool.ToolCallback;
+import org.springframework.ai.vectorstore.SimpleVectorStore;
+import org.springframework.ai.vectorstore.filter.Filter;
+import org.springframework.ai.vectorstore.filter.FilterExpressionBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -76,6 +83,8 @@ public class ChatSessionServiceImpl implements ChatSessionService {
     private SessionRepo sessionRepo;
     @Resource
     private SessionMessageRepo sessionMessageRepo;
+    @Resource
+    private SimpleVectorStore vectorStore;
 
     /**
      * 查询会话分页列表
@@ -104,7 +113,7 @@ public class ChatSessionServiceImpl implements ChatSessionService {
                 throw new BizException("对话ID已存在");
             }
         }
-        AgentConfig.SessionDefaultConfig sessionDefault = configService.querySessionDefault();
+        AgentConfig.SessionConfig sessionDefault = configService.querySessionDefault();
         String modelId = request.getModelId();
         if (StringUtils.isNotBlank(modelId)) {
             ChatModelDto dto = configService.queryModel(modelId);
@@ -140,7 +149,7 @@ public class ChatSessionServiceImpl implements ChatSessionService {
         String title = StringUtils.defaultIfBlank(request.getTitle(), sessionDefault.getTitle());
         title = StringUtils.defaultIfBlank(title, defaultTitle);
         request.setTitle(title);
-        String sessionId = sessionRepo.insert(request);
+        String sessionId = sessionRepo.insertSession(request);
 
         Session session = sessionRepo.getSessionById(sessionId);
         return SessionConverter.INSTANCE.toVo(session);
@@ -185,7 +194,9 @@ public class ChatSessionServiceImpl implements ChatSessionService {
     /**
      * 在会话中聊天
      */
-    public List<MessageResp> sessionChat(String sessionId, String userReq) {
+    public List<MessageResp> sessionChat(MessageReq request) {
+        String sessionId = request.getSessionId();
+        String userReq = request.getContent();
         if (sessionId == null) {
             sessionId = this.newSession(new SessionNewReq()).getId();
         }
@@ -221,11 +232,14 @@ public class ChatSessionServiceImpl implements ChatSessionService {
         lastMessageId = userMessageId;
 
         Prompt prompt = new Prompt(chatMemory.get(sessionId), chatOptions);
-        ChatResponse response = chatClient
+        ChatClient.ChatClientRequestSpec requestSpec = chatClient
                 .prompt(prompt)
-                .advisors(AdvisorParams.toolCallingAdvisorAutoRegister(false))
-                .call()
-                .chatResponse();
+                .advisors(AdvisorParams.toolCallingAdvisorAutoRegister(false));
+        if (request.getKnowledgeId() != null) {
+            Advisor retrievalAugmentationAdvisor = this.buildRetrievalAugmentationAdvisor(request.getKnowledgeId());
+            requestSpec.advisors(retrievalAugmentationAdvisor);
+        }
+        ChatResponse response = requestSpec.call().chatResponse();
         Message message = response.getResult().getOutput();
         chatMemory.add(sessionId, message);
         MessageDto messageDto = MessageDto.builder()
@@ -255,11 +269,7 @@ public class ChatSessionServiceImpl implements ChatSessionService {
             lastMessageId = messageDto.getId();
 
             prompt = new Prompt(result.conversationHistory(), chatOptions);
-            response = chatClient
-                    .prompt(prompt)
-                    .advisors(AdvisorParams.toolCallingAdvisorAutoRegister(false))
-                    .call()
-                    .chatResponse();
+            response = requestSpec.call().chatResponse();
             message = response.getResult().getOutput();
             chatMemory.add(sessionId, message);
             messageDto = MessageDto.builder()
@@ -276,7 +286,7 @@ public class ChatSessionServiceImpl implements ChatSessionService {
 
         if (lastMessage == null) {
             // 如果是第一次聊天，并且使用默认会话标题，则根据聊天内容自动生成会话标题
-            AgentConfig.SessionDefaultConfig sessionDefault = configService.querySessionDefault();
+            AgentConfig.SessionConfig sessionDefault = configService.querySessionDefault();
             String defaultTitle = ObjectUtils.getIfNull(sessionDefault.getTitle(), this.defaultTitle);
             if (Objects.equals(defaultTitle, session.getTitle())) {
                 String title = chatClient.prompt(new Prompt(chatMemory.get(sessionId)))
@@ -290,7 +300,9 @@ public class ChatSessionServiceImpl implements ChatSessionService {
         return MessageConverter.INSTANCE.toVoList(messageList);
     }
 
-    public void sessionChatStream(String sessionId, String userReq, Consumer<StreamEventVo> messageConsumer) {
+    public void sessionChatStream(MessageReq request, Consumer<StreamEventVo> messageConsumer) {
+        String sessionId = request.getSessionId();
+        String userReq = request.getContent();
         if (sessionId == null) {
             sessionId = this.newSession(new SessionNewReq()).getId();
         }
@@ -420,7 +432,7 @@ public class ChatSessionServiceImpl implements ChatSessionService {
 
         if (lastMessage == null) {
             // 如果是第一次聊天，并且使用默认会话标题，则根据聊天内容自动生成会话标题
-            AgentConfig.SessionDefaultConfig sessionDefault = configService.querySessionDefault();
+            AgentConfig.SessionConfig sessionDefault = configService.querySessionDefault();
             String defaultTitle = ObjectUtils.getIfNull(sessionDefault.getTitle(), this.defaultTitle);
             if (Objects.equals(defaultTitle, session.getTitle())) {
                 String title = chatClient.prompt(new Prompt(chatMemory.get(sessionId)))
@@ -531,5 +543,19 @@ public class ChatSessionServiceImpl implements ChatSessionService {
             chatMemory.add(sessionId, messageList);
         }
         return chatMemory;
+    }
+
+    private Advisor buildRetrievalAugmentationAdvisor(String knowledgeId) {
+        Filter.Expression expression = new FilterExpressionBuilder().eq("knowledgeId", knowledgeId).build();
+        return RetrievalAugmentationAdvisor.builder()
+                .documentRetriever(VectorStoreDocumentRetriever.builder()
+                        .similarityThreshold(0.50)
+                        .vectorStore(vectorStore)
+                        .filterExpression(expression)
+                        .build())
+                .queryAugmenter(ContextualQueryAugmenter.builder()
+                        .allowEmptyContext(true)
+                        .build())
+                .build();
     }
 }

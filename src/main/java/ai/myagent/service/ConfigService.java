@@ -2,6 +2,7 @@ package ai.myagent.service;
 
 import ai.myagent.model.dto.AgentConfig;
 import ai.myagent.model.dto.ChatModelDto;
+import ai.myagent.model.dto.EmbeddingModelDto;
 import ai.myagent.model.vo.ModelResp;
 import ai.myagent.model.vo.SkillsVo;
 
@@ -27,7 +28,7 @@ public interface ConfigService {
     /**
      * 查询会话默认配置
      */
-    AgentConfig.SessionDefaultConfig querySessionDefault();
+    AgentConfig.SessionConfig querySessionDefault();
 
     /**
      * 查询模型
@@ -45,7 +46,12 @@ public interface ConfigService {
     List<ModelResp> queryModelVoList();
 
     /**
-     * 查询可加载的Skills列表
+     * 查询可加载的 Skills 列表
      */
     List<SkillsVo> querySkillList();
+
+    /**
+     * 查询 Embedding 模型
+     */
+    EmbeddingModelDto queryEmbeddingModel();
 }

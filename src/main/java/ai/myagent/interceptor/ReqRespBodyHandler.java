@@ -88,6 +88,7 @@ public class ReqRespBodyHandler extends RequestBodyAdviceAdapter implements Resp
             return body;
         }
 
+        boolean serialized = false;
         if (!(body instanceof Response) && !HttpEntity.class.isAssignableFrom(returnType.getParameterType())
                 && !returnType.getParameterType().isAnnotationPresent(RawResponse.class)) {
             if (selectedContentType.equals(MediaType.APPLICATION_JSON)) {
@@ -95,6 +96,7 @@ public class ReqRespBodyHandler extends RequestBodyAdviceAdapter implements Resp
                 body = Response.ok(body);
                 if (selectedConverterType.isAssignableFrom(StringHttpMessageConverter.class)) {
                     body = JsonUtils.toJsonStr(body);
+                    serialized = true;
                 }
             }
         }
@@ -105,7 +107,7 @@ public class ReqRespBodyHandler extends RequestBodyAdviceAdapter implements Resp
         }
         Long startTime = (Long) servletRequest.getAttribute(ATTR_START_TIME);
         Long time = startTime != null ? System.currentTimeMillis() - startTime : null;
-        log.info("Response `{}` ({}), {} ms, body: {}", requestUrl, requestMethod, time, mapper.toJsonStr(body));
+        log.info("Response `{}` ({}), {} ms, body: {}", requestUrl, requestMethod, time, !serialized ? mapper.toJsonStr(body) : body);
         return body;
     }
 

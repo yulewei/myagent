@@ -115,7 +115,7 @@ public class ChatController {
     @PostMapping("session/chat")
     @Operation(summary = "在会话中聊天（非流式）")
     public List<MessageResp> sessionChat(@RequestBody @Valid MessageReq request) {
-        return chatSessionService.sessionChat(request.getSessionId(), request.getContent());
+        return chatSessionService.sessionChat(request);
     }
 
     @PostMapping(value = "session/chat/stream")
@@ -147,7 +147,7 @@ public class ChatController {
                 throw new RuntimeException(e);
             }
         };
-        chatSessionService.sessionChatStream(request.getSessionId(), request.getContent(), consumer);
+        chatSessionService.sessionChatStream(request, consumer);
         return emitter;
     }
 }

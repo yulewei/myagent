@@ -40,12 +40,12 @@ public interface ChatSessionService {
     /**
      * 在会话中聊天
      */
-    List<MessageResp> sessionChat(String sessionId, String userReq);
+    List<MessageResp> sessionChat(MessageReq request);
 
     /**
      * 在会话中聊天
      */
-    void sessionChatStream(String sessionId, String userReq, Consumer<StreamEventVo> consumer);
+    void sessionChatStream(MessageReq request, Consumer<StreamEventVo> consumer);
 
     /**
      * 查询会话全部历史消息列表（按时间正序）

@@ -1,6 +1,7 @@
 package ai.myagent.service;
 
 import ai.myagent.AgentApplication;
+import ai.myagent.model.vo.MessageReq;
 import ai.myagent.model.vo.MessageResp;
 import ai.myagent.model.vo.SkillsVo;
 import ai.myagent.util.JsonUtils;
@@ -33,7 +34,8 @@ public class SessionServiceTest {
 
     @Test
     public void test_chat() {
-        List<MessageResp> response = chatSessionService.sessionChat("default", "杭州天气？");
+        MessageReq request = MessageReq.builder().sessionId("default").content("杭州天气？").build();
+        List<MessageResp> response = chatSessionService.sessionChat(request);
         log.info("response: {}", JsonUtils.toJsonStr(response));
     }
 }

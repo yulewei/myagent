@@ -1,6 +1,11 @@
-session-default:
-  model-id: deepseek-v4-flash
-  tools: [ File, Shell, Glob, Grep, WebFetch, Skill ]
+default:
+  session:
+    model-id: deepseek-v4-flash
+    tools: [ File, Shell, Glob, Grep, WebFetch, Skill ]
+  embedding:
+    provider-id: GLM
+    model-id: embedding-3
+    dimensions: 256
 providers:
   - id: DeepSeek
     name: DeepSeek
@@ -16,7 +21,7 @@ providers:
     models:
       - id: gpt-5.5
       - id: gpt-5.5-pro
-      - id: text-embedding-3-large
+      - id: text-embedding-3-small
         type: embedding
   - id: GLM
     name: 智谱GLM

@@ -33,6 +33,9 @@ dependencies {
     implementation 'org.springframework.ai:spring-ai-client-chat'
     implementation 'org.springframework.ai:spring-ai-openai'
     implementation 'org.springframework.ai:spring-ai-deepseek'
+    implementation 'org.springframework.ai:spring-ai-rag'
+    implementation 'org.springframework.ai:spring-ai-pgvector-store'
+    implementation 'org.springframework.ai:spring-ai-tika-document-reader'
     // https://github.com/spring-ai-community/spring-ai-agent-utils
     implementation 'org.springaicommunity:spring-ai-agent-utils:0.10.0'
 

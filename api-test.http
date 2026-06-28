@@ -104,3 +104,32 @@ POST http://localhost:8989/api/session/chat/stream
 Content-Type: application/json
 
 { "sessionId": "deepseek:chat", "content": "你是什么模型？" }
+
+
+### api/knowledge/{kb}/file/upload
+# 上传文件到知识库，文件为 `README.md`
+POST http://localhost:8989/api/knowledge/kb/file/upload
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="file"; filename="README.md"
+
+< ./README.md
+
+
+### api/knowledge/{kb}/doc/list
+# 查询知识库文档列表
+GET http://localhost:8989/api/knowledge/kb/doc/list
+
+
+### api/knowledge/{kb}/doc/{docId}
+# 查询知识库文档详情
+GET http://localhost:8989/api/knowledge/kb/doc/69a4d03f736d649a09ee4b0bf8763bba
+
+
+### api/session/chat
+# 会话中聊天，使用知识库进行增强
+POST http://localhost:8989/api/session/chat
+Content-Type: application/json
+
+{ "sessionId": "deepseek:chat", "content": "MyAgent 项目有哪些内置工具？", "knowledgeId": "kb" }

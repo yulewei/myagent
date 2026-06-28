@@ -54,7 +54,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * @since 2026/6/20
  */
 @Slf4j
-@SpringBootTest(classes = AgentApplication.class)
+@SpringBootTest(classes = AgentApplication.class, properties = {"spring.profiles.active=dev"})
 public class ChatTest {
     @Value("${myagent.session-default.prompt-summary}")
     private String promptSummary;
